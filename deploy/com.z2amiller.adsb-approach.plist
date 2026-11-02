@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!-- adsb-approach under launchd on macOS. Replace @REPO@ with the checkout's absolute path and @LOGS@ with a log
+     directory such as /Users/you/Library/Logs, set the receiver in EnvironmentVariables, then load it as the README
+     describes. -->
+<dict>
+  <key>Label</key>
+  <string>com.z2amiller.adsb-approach</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>@REPO@/.venv/bin/adsb-approach</string>
+    <string>run</string>
+    <string>--config</string>
+    <string>@REPO@/config/adsb-approach.toml</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>ADSB_APPROACH_SOURCE_HOST</key>
+    <string>127.0.0.1</string>
+    <key>ADSB_APPROACH_SOURCE_PORT</key>
+    <string>30047</string>
+    <key>ADSB_APPROACH_TAR1090_URL</key>
+    <string>http://127.0.0.1/tar1090/</string>
+  </dict>
+  <key>WorkingDirectory</key>
+  <string>@REPO@</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+  <key>StandardOutPath</key>
+  <string>@LOGS@/adsb-approach.log</string>
+  <key>StandardErrorPath</key>
+  <string>@LOGS@/adsb-approach.log</string>
+</dict>
+</plist>

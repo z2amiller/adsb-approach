@@ -1,0 +1,112 @@
+# Relative paths resolve against this file's directory (config/).
+[service]
+db_path = "../data/approaches.sqlite"
+bind = "127.0.0.1"             # this host only; "0.0.0.0" opens the page, which has no login, to the LAN
+port = 8090
+typedb_path = "../data/aircraft.csv.gz"
+type_classes_path = "type_classes.toml"
+airports_dir = "airports"
+tar1090_url = "http://127.0.0.1/tar1090/"    # or ADSB_APPROACH_TAR1090_URL for run
+metar_interval_s = 600           # seconds between METAR fetches in run; 0 turns polling off
+metar_max_age_min = 90           # an older METAR temperature: no temperature correction (TEMP_UNCORRECTED)
+qnh_max_age_min = 180            # an older METAR altimeter setting: standard pressure (QNH_ASSUMED)
+log_level = "info"
+timezone = "America/Los_Angeles" # IANA zone the coverage page's days are cut in; unset: this host's own zone
+globe_history_dir = "/var/globe_history"       # readsb's day-by-day trace files, read by the flight search
+live_traces_dir = "/run/readsb/traces"         # live trace files for a day globe_history_dir lacks; "" turns this off
+nearby_airports_path = "nearby_airports.csv"   # airports that can name a track in the flight search; may be missing
+
+[source]
+kind = "readsb-json"           # readsb-json | aircraft-json | files
+host = "127.0.0.1"             # or ADSB_APPROACH_SOURCE_HOST for run
+port = 30047                   # or ADSB_APPROACH_SOURCE_PORT
+# kind = "aircraft-json"; url = "http://127.0.0.1/tar1090/data/aircraft.json"; interval_s = 1.0
+
+[detection]
+candidate_max_along_nm = 12.0
+candidate_max_cross_nm = 1.0
+candidate_track_tol_deg = 25.0
+candidate_max_height_ft = 6000
+candidate_max_climb_fpm = 300
+established_cross_nm = 0.3
+established_window_s = 30
+established_min_points = 5
+established_track_tol_deg = 10.0
+established_max_cross_rate_fps = 20.0
+score_max_along_nm = 10.0
+gates_ft = [1000, 500]        # keep both: coverage_daily has a column for each; further gates are scored, not tracked
+gate_max_bracket_s = 30
+lost_timeout_s = 45
+presumed_landed_max_height_ft = 1500
+presumed_landed_max_along_nm = 4.0
+go_around_min_climb_ft = 300
+go_around_min_vr_fpm = 300
+go_around_min_s = 15
+go_around_armed_below_ft = 2000
+touch_and_go_max_height_ft = 50
+runway_change_min_s = 10
+runway_change_track_tol_deg = 5.0
+runway_change_near_ft = 300
+runway_change_far_ft = 450
+abandon_min_s = 15
+abandon_cross_nm = 1.0
+abandon_track_tol_deg = 45.0
+reappear_go_around_s = 300
+reappear_max_nm = 10.0
+arrival_link_window_min = 30
+landed_confirm_ground_min = 30
+landed_confirm_departure_nm = 3.0
+landed_confirm_departure_h = 8
+
+[stability]
+gp_dots_max = 1.0
+loc_dots_max = 1.0
+sink_max_fpm = 1000
+fast_delta_kt = 15
+slow_delta_kt = -10
+steep_delta_deg = 0.5
+late_established_hat_ft = 1000
+
+# Fleet norms: for each runway, the 25th, 50th and 75th percentiles of height and wind-corrected speed in bins
+# along the approach, taken from the fleet's own recent history. window_days sets how far back the norms look;
+# min_samples is how many approaches a key needs before it is used — the aircraft's own type first, then its
+# traffic class, then every aircraft. rebuild_interval_min sets how often the collector rebuilds them in the
+# background (0 turns that worker off; adsb-approach fleet-rebuild still works on demand). bin_nm and max_along_nm
+# set the bins the percentiles are taken in. [stability] fast_delta_kt and slow_delta_kt are measured against
+# these norms.
+[fleet]
+window_days = 30
+min_samples = 30
+rebuild_interval_min = 60
+bin_nm = 0.5
+max_along_nm = 8.0
+
+# Live merge for run: while an aircraft has an approach open, ask adsb.lol's re-api where it is every few seconds and
+# add what it says to this receiver's own positions, so an approach the receiver loses low is followed to the ground.
+# adsb.lol's positions are moved onto this receiver's clock and count only when newer than the aircraft's latest; they
+# are marked as such, and an approach that ends on one after the receiver went quiet is flagged. adsb.lol's docs license
+# its data under ODbL 1.0, but what is fetched stays in the database here and must not be published.
+[external]
+enabled = false          # off unless chosen: polls send requests to adsb.lol
+url = "https://re-api.adsb.lol/"    # re-api; a poll adds ?find_hex= and the watched aircraft. Or the keyed v2 API:
+                                  # "https://api.adsb.lol/v2/hex/", which takes them in the path
+poll_interval_s = 2      # at most one request this often, for every watched aircraft at once
+timeout_s = 10           # one request's limit; a timeout skips that poll only
+backoff_min = 15         # pause after a 401, 403, 429 or 5xx that sends no Retry-After; a restart keeps it
+clock_offset_s = 0.10    # taken off adsb.lol's times to sit on this receiver's clock
+watch_max_min = 20       # minutes after a go-around or touch-and-go to keep asking and to record its climb-out
+api_key_file = ""        # a file holding an adsb.lol key (www.adsb.lol/mmb), sent as x-api-key; empty sends none
+globe_url = "https://globe.adsb.lol/"    # the drawer's second link, alongside tar1090's; independent of enabled above
+
+# Dated changes to the receiver, drawn as a line on every chart of the coverage page, with a before/after table
+# under them comparing the period since the previous mark with the period until the next. Add one whenever the
+# aerial, the feed line, the amplifier or the receiver changes. `at` is a local day; `label` says what changed.
+# [[coverage.events]]
+# at = 2026-10-04
+# label = "new antenna"
+
+# Per-airport overrides (optional). Airport files live in [service].airports_dir.
+# [airports.KSJC]
+# enabled = true
+# [airports.KSFO.runways."28R"]
+# glide_path_deg = 3.0

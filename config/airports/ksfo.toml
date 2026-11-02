@@ -1,0 +1,141 @@
+[airport]
+icao = "KSFO"
+name = "SAN FRANCISCO INTL"
+enabled = true
+lat = 37.618806
+lon = -122.375417
+elevation_ft = 13
+metar = "KSFO"
+declination_deg = 14.0
+geoid_offset_ft = -107.1
+parallel_groups = [["01L", "01R"], ["10L", "10R"], ["19L", "19R"], ["28L", "28R"]]
+
+[runways."01L"]
+enabled = true
+threshold_lat = 37.609453
+threshold_lon = -122.381897
+threshold_elev_ft = 10
+threshold_hae_m = -29.4
+course_true_deg = 27.702
+runway_length_ft = 7650
+displaced_threshold_ft = 640
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 50.0
+reference_source = "cifp:CIFP_260903+assumed"
+
+[runways."01R"]
+enabled = true
+threshold_lat = 37.607692
+threshold_lon = -122.380139
+threshold_elev_ft = 11
+threshold_hae_m = -29.2
+course_true_deg = 27.703
+runway_length_ft = 8650
+displaced_threshold_ft = 560
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 50.0
+reference_source = "cifp:CIFP_260903+assumed"
+
+[runways."10L"]
+enabled = true
+threshold_lat = 37.628739
+threshold_lon = -122.393392
+threshold_elev_ft = 6
+threshold_hae_m = -30.9
+course_true_deg = 117.892
+runway_length_ft = 11870
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 55.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."10R"]
+enabled = true
+threshold_lat = 37.626292
+threshold_lon = -122.393106
+threshold_elev_ft = 7
+threshold_hae_m = -30.5
+course_true_deg = 117.893
+runway_length_ft = 11381
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 60.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."19L"]
+enabled = true
+threshold_lat = 37.627342
+threshold_lon = -122.367111
+threshold_elev_ft = 11
+threshold_hae_m = -29.4
+course_true_deg = 207.711
+runway_length_ft = 8650
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+localizer_lat = 37.604522
+localizer_lon = -122.382239
+loc_width_deg = 4.27
+ils = "ISIA 108.90 CAT 1"
+glide_path_deg = 3.0
+tch_ft = 55.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."19R"]
+enabled = true
+threshold_lat = 37.626481
+threshold_lon = -122.370608
+threshold_elev_ft = 9
+threshold_hae_m = -29.8
+course_true_deg = 207.709
+runway_length_ft = 7650
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.15
+tch_ft = 58.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."28L"]
+enabled = true
+threshold_lat = 37.612097
+threshold_lon = -122.359264
+threshold_elev_ft = 13
+threshold_hae_m = -28.8
+course_true_deg = 297.914
+runway_length_ft = 11381
+displaced_threshold_ft = 300
+localizer_offset_ft = 1000
+localizer_lat = 37.627075
+localizer_lon = -122.394978
+loc_width_deg = 3.43
+ils = "ISFO 109.55 CAT 2"
+glide_path_deg = 2.85
+tch_ft = 53.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."28R"]
+enabled = true
+threshold_lat = 37.613919
+threshold_lon = -122.358058
+threshold_elev_ft = 13
+threshold_hae_m = -28.7
+course_true_deg = 297.914
+runway_length_ft = 11870
+displaced_threshold_ft = 300
+localizer_offset_ft = 1000
+localizer_lat = 37.629544
+localizer_lon = -122.395311
+loc_width_deg = 3.29
+ils = "IGWQ 111.70 CAT 3"
+glide_path_deg = 3.0
+tch_ft = 55.0
+reference_source = "cifp:CIFP_260903"
+
+[[runways."28R".paths]]
+name = "quiet-bridge"
+label = "Quiet Bridge"
+source = "SFO VOR R-095 inbound (292.0T, declination 17E); turn at 5.0 nm and join at 1.1 nm hand-fitted to 7,299 flights matched to the radial, 2026-09-13..10-23; fit-path on the same days gives 5.75 nm and 1.0 nm from 7,114 flights, within 125 ft"
+points = [[37.488179, -121.966495], [37.582913, -122.259838], [37.60534, -122.337623]]

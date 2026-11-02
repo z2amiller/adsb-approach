@@ -1,0 +1,12 @@
+/data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+/build/
+/dist/
+.DS_Store
+/config/adsb-approach.toml

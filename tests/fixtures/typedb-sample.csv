@@ -1,0 +1,5 @@
+# Hand-written aircraft rows for tests, in the layout of tar1090-db's aircraft.csv: hex, registration,
+# ICAO type, database flags and description, separated by semicolons. Test data only, not copied from any
+# aircraft database.
+A44540;N37415;B39M;00;BOEING 737 MAX 9
+000001;N0TEST;C56X;;INVENTED CITATION EXCEL

@@ -1,0 +1,665 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #4b5563;
+  --card: #f3f4f6;
+  --border: #d1d5db;
+  --accent: #2563eb;
+  --ok: #15803d;
+  --warn: #b45309;
+  --err: #dc2626;
+  --info: #2563eb;
+  --include: #15803d;
+  --exclude: #b91c1c;
+  --emergency: #b91c1c;          /* an EMERGENCY_MASK flag, its row or its card */
+  --seen: #9ca3af;               /* the left bar of a flight heard with no approach logged */
+  --series-track: #2563eb;
+  --series-path: #6b7280;
+  --series-2: #d97706;
+  --series-band: rgba(217, 119, 6, 0.18);      /* --series-2 at ~18% opacity: the fleet norm band behind the track */
+  --series-count: rgba(107, 114, 128, 0.25);   /* the coverage chart's daily-approaches bars, behind both lines */
+  --grid: #e5e7eb;
+  --on-fill: #ffffff;            /* text on a filled banner or chip */
+  /* The outcome charts' seven stacked categories (coverage page), in coveragelogic.js's OUTCOMES order. Each is its
+     own token, not reused from --ok/--warn/--err, so a later change to those banner colours can't silently reshade
+     this legend. */
+  --outcome-landed: #15803d;
+  --outcome-lost-on-final: #b45309;
+  --outcome-lost: #dc2626;
+  --outcome-go-around: #2563eb;
+  --outcome-touch-and-go: #7c3aed;
+  --outcome-runway-change: #0891b2;
+  --outcome-abandoned: #db2777;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --fg: #e5e7eb;
+    --muted: #9ca3af;
+    --card: #1f2937;
+    --border: #374151;
+    --accent: #60a5fa;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --err: #f87171;
+    --info: #60a5fa;
+    --include: #4ade80;
+    --exclude: #f87171;
+    --emergency: #fca5a5;
+    --seen: #6b7280;
+    --series-track: #60a5fa;
+    --series-path: #9ca3af;
+    --series-2: #fbbf24;
+    --series-band: rgba(251, 191, 36, 0.18);   /* --series-2 at ~18% opacity: the fleet norm band behind the track */
+    --series-count: rgba(156, 163, 175, 0.25); /* the coverage chart's daily-approaches bars, behind both lines */
+    --grid: #374151;
+    --on-fill: #0f172a;
+    --outcome-landed: #4ade80;
+    --outcome-lost-on-final: #fbbf24;
+    --outcome-lost: #f87171;
+    --outcome-go-around: #60a5fa;
+    --outcome-touch-and-go: #a78bfa;
+    --outcome-runway-change: #22d3ee;
+    --outcome-abandoned: #f472b6;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 75rem;
+  padding: 1rem 1.25rem 3rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+a {
+  color: var(--accent);
+}
+
+.empty {
+  color: var(--muted);
+}
+
+/* Banner */
+
+.banner {
+  margin: 0 -1.25rem 1rem;
+  padding: 0.6rem 1.25rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+.banner[data-level="error"] {
+  background: var(--err);
+  color: var(--on-fill);
+  border-color: var(--err);
+}
+
+.banner[data-level="warning"] {
+  background: var(--warn);
+  color: var(--on-fill);
+  border-color: var(--warn);
+}
+
+.banner[data-level="info"] {
+  background: var(--info);
+  color: var(--on-fill);
+  border-color: var(--info);
+}
+
+/* Header */
+
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.top h1 {
+  font-size: 1.4rem;
+  margin: 0.75rem 0;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.stream-state {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: var(--card);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.stream-state[data-state="open"] {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+
+.stream-state[data-state="connecting"] {
+  color: var(--muted);
+}
+
+.stream-state[data-state="retrying"] {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+/* Live cards */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0.5rem 0 1.5rem;
+  padding: 0;
+}
+
+.card {
+  display: block;
+  padding: 0.75rem 0.9rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.card:hover {
+  border-color: var(--accent);
+}
+
+a.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* A card with a non-empty "emergency" -- there is no yellow attention style on a live card to win over,
+   only the log row has one, but this draws it the same way (a red left border). */
+.card[data-emergency] {
+  border-left: 3px solid var(--emergency);
+}
+
+.card h3 {
+  margin: 0 0 0.1rem;
+  font-size: 1rem;
+}
+
+.card .sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.card dl {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.1rem 0.6rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.card dt {
+  color: var(--muted);
+}
+
+.card dd {
+  margin: 0;
+  text-align: right;
+}
+
+.card dd[data-warn] {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+/* Filters */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.filter-group .label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.chip {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.chip[data-mode="include"] {
+  background: var(--include);
+  border-color: var(--include);
+  color: var(--on-fill);
+}
+
+.chip[data-mode="exclude"] {
+  border-color: var(--exclude);
+  color: var(--exclude);
+  text-decoration: line-through;
+}
+
+/* Arrivals log */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.log {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.log th,
+.log td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.log tbody tr:hover {
+  background: var(--card);
+  cursor: pointer;
+}
+
+.log tr[data-attention] {
+  border-left: 3px solid var(--warn);
+}
+
+/* Same selector shape as [data-attention] above, so this rule's later source order wins the border-left
+   for a row that carries both attributes -- red for an emergency, over attention's yellow. */
+.log tr[data-emergency] {
+  border-left: 3px solid var(--emergency);
+}
+
+/* Find a flight: a flight heard with no approach logged gets a neutral grey bar, not attention's yellow or an
+   emergency's red. search.js sets data-seen only on a row with no emergency, so the
+   second rule is what keeps red winning if a row ever carries both. */
+.log tr[data-seen] {
+  border-left: 3px solid var(--seen);
+}
+
+.log tr[data-seen][data-emergency] {
+  border-left-color: var(--emergency);
+}
+
+.log tr[data-row]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* The grey row's "where" chip: dashed, so that it does not read as one of an arrival's attempt chips. */
+.where {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border: 1px dashed var(--seen);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.reg {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.attempt {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.attempt[data-open] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* A procedure path's label beside an attempt's chip: "Quiet Bridge", or "Quiet Bridge →
+   ILS" once the approach joined the localizer. Outlined rather than filled, so that it does not read as an outcome. */
+.path-chip {
+  display: inline-block;
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--accent);
+  font-size: 0.75rem;
+}
+
+.log .path-chip {
+  margin-left: 0.35rem;
+}
+
+.flag {
+  display: inline-block;
+  margin: 0 0.2rem 0.2rem 0;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.25rem;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* An EMERGENCY_MASK flag (isEmergencyFlag's prefix rule), drawn red rather than the plain --muted above. */
+.flag[data-emergency] {
+  color: var(--emergency);
+  font-weight: 600;
+}
+
+/* Drawer */
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(44rem, 100vw);
+  overflow-y: auto;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  box-shadow: -0.5rem 0 1.5rem rgba(0, 0, 0, 0.25);
+  padding: 1rem 1.25rem 2rem;
+  z-index: 10;
+}
+
+@media (max-width: 40rem) {
+  .drawer {
+    width: 100vw;
+  }
+}
+
+.drawer header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+#drawer-close,
+#flight-close {
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.attempts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.5rem 0;
+}
+
+.attempts button {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.attempts button[data-open] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.attempts button[aria-current="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+  cursor: default;
+}
+
+.chart {
+  min-height: 200px;
+  margin: 0.25rem 0 1rem;
+}
+
+.drawer figure {
+  margin: 0 0 1rem;
+}
+
+.drawer figcaption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.gates {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.gates th,
+.gates td {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.metar {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  color: var(--muted);
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* The drawer's trace links, tar1090's and adsb.lol's: a gap, not a bare space, so two underlined links do not read
+ * as one. A hidden link takes no space, so none is left behind when [external] globe_url is empty. */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+}
+
+.external,
+.path-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* The drawer draws no flag chips of its own, so this is the only place it shows an
+   EMERGENCY_MASK flag -- the same red the log row's and live card's borders already use, bold so it reads as a
+   warning rather than another muted note. */
+.emergency {
+  color: var(--emergency);
+  font-weight: 600;
+}
+
+/* Find a flight page: the search form and the grey-row drawer's facts */
+
+.query {
+  flex: 1 1 14rem;
+  max-width: 24rem;
+}
+
+#counts {
+  color: var(--muted);
+  min-height: 1.2em;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1rem;
+  margin: 1rem 0 0;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+/* Coverage page */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.25rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+#stats-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+}
+
+.coverage-charts,
+.outcome-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 1.5rem 1.25rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.coverage-charts figure,
+.outcome-charts figure {
+  margin: 0;
+}
+
+.coverage-charts figcaption,
+.outcome-charts figcaption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.chart-readout {
+  min-height: 1.2em;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+#quiet-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+#marks section {
+  margin-bottom: 1.5rem;
+}
+
+#marks h3 {
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+}
+
+#marks table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+#marks th,
+#marks td {
+  padding: 0.3rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+#marks .period {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0.4rem 0 0;
+}
+
+#marks .footnote {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 1rem 0 0;
+}
+
+#stats-error {
+  border-left: 3px solid var(--err);
+  padding: 0.4rem 0.75rem;
+  margin: 0.5rem 0 1rem;
+}
+
+#stats-error button {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+/* Credits: the notice ODbL 1.0 §4.3 asks of a public page drawn from adsb.lol's data, in the licence's own example
+   wording. Every page carries it: the search page's drawer draws adsb.lol's points too, and the
+   coverage page their share. */
+
+.credits {
+  margin-top: 2rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.credits p {
+  margin: 0;
+}

@@ -1,0 +1,101 @@
+[airport]
+icao = "KSJC"
+name = "MINETA SAN JOSE INTL"
+enabled = true
+lat = 37.362994
+lon = -121.928619
+elevation_ft = 62
+metar = "KSJC"
+declination_deg = 13.0
+geoid_offset_ft = -107.2
+parallel_groups = [["12L", "12R"], ["30L", "30R"]]
+
+[runways."11"]
+enabled = false
+threshold_lat = 37.365976
+threshold_lon = -121.936702
+threshold_elev_ft = 42
+course_true_deg = 138.917
+runway_length_ft = 4599
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 50
+reference_source = "ourairports+assumed"
+
+[runways."12L"]
+enabled = true
+threshold_lat = 37.372294
+threshold_lon = -121.937217
+threshold_elev_ft = 38
+threshold_hae_m = -21.2
+course_true_deg = 138.926
+runway_length_ft = 11000
+displaced_threshold_ft = 1307
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 57.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."12R"]
+enabled = true
+threshold_lat = 37.37105
+threshold_lon = -121.93905
+threshold_elev_ft = 38
+threshold_hae_m = -21.1
+course_true_deg = 138.93
+runway_length_ft = 11000
+displaced_threshold_ft = 1297
+localizer_offset_ft = 1000
+localizer_lat = 37.350844
+localizer_lon = -121.916906
+loc_width_deg = 4.6
+ils = "ISLV 110.90 CAT 1"
+glide_path_deg = 3.0
+tch_ft = 58.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."29"]
+enabled = false
+threshold_lat = 37.356374
+threshold_lon = -121.926171
+threshold_elev_ft = 52
+course_true_deg = 318.924
+runway_length_ft = 4599
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 50
+reference_source = "ourairports+assumed"
+
+[runways."30L"]
+enabled = true
+threshold_lat = 37.356239
+threshold_lon = -121.922814
+threshold_elev_ft = 57
+threshold_hae_m = -15.3
+course_true_deg = 318.94
+runway_length_ft = 11000
+displaced_threshold_ft = 2537
+localizer_offset_ft = 1000
+localizer_lat = 37.374219
+localizer_lon = -121.942531
+loc_width_deg = 4.61
+ils = "ISJC 110.90 CAT 2"
+glide_path_deg = 3.0
+tch_ft = 54.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."30R"]
+enabled = true
+threshold_lat = 37.357503
+threshold_lon = -121.921
+threshold_elev_ft = 55
+threshold_hae_m = -15.8
+course_true_deg = 318.936
+runway_length_ft = 11000
+displaced_threshold_ft = 2537
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 55.0
+reference_source = "cifp:CIFP_260903"

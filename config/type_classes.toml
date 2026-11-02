@@ -1,0 +1,76 @@
+# Type codes (ICAO designators) used for traffic class and display-only approach categories.
+airliner = [
+  "A19N", "A20N", "A21N", "A319", "A320", "A321", "A332", "A333", "A339", "A343", "A346", "A359", "A35K", "A388",
+  "B37M", "B38M", "B39M", "B712", "B722", "B732", "B733", "B734", "B735", "B736", "B737", "B738", "B739",
+  "B744", "B748", "B752", "B753", "B762", "B763", "B764", "B772", "B773", "B77L", "B77W", "B788", "B789", "B78X",
+  "BCS1", "BCS3", "CRJ2", "CRJ7", "CRJ9", "CRJX", "E145", "E170", "E175", "E75L", "E75S", "E190", "E195", "E290", "E295",
+  "DH8D", "AT76", "MD11", "MD82", "MD83", "MD88", "MD90", "DC10", "B463",
+]
+bizjet = [
+  "C25A", "C25B", "C25C", "C25M", "C500", "C510", "C525", "C550", "C560", "C56X", "C650", "C680", "C68A", "C700", "C750",
+  "CL30", "CL35", "CL60", "GL5T", "GL7T", "GLEX", "GLF2", "GLF3", "GLF4", "GLF5", "GLF6", "G150", "G280", "GA5C", "GA6C", "GA7C", "GALX",
+  "FA10", "FA20", "FA50", "FA7X", "FA8X", "F2TH", "F900", "H25A", "H25B", "H25C", "HA4T", "HDJT",
+  "LJ31", "LJ35", "LJ40", "LJ45", "LJ55", "LJ60", "LJ70", "LJ75", "PC24", "PRM1", "E50P", "E55P", "E545", "E550", "EA50", "SF50", "BE40", "ASTR", "WW24",
+]
+# Light GA singles, for the arrivals/live pages' GA filter only: display, not traffic_class -- a C152
+# is still class "other", scored against the "other"/all-traffic norms exactly as before this list existed. Not
+# exhaustive: chosen to cover nearly all of the light traffic actually seen circuiting KOAK, not every type that
+# could show up. Add codes here as new ones turn up; it is safe to do so at any time (config_hash ignores this list).
+ga = ["C152", "C172", "P28A", "PA24", "M20P", "BE36", "S22T", "P32R", "PA34", "AA5", "M7", "COL3", "COL4"]
+
+# FAA approach category by type (display bands only; approximate, by reference speed at max landing weight)
+[approach_category]
+A19N = "C"
+A20N = "C"
+A21N = "C"
+A319 = "C"
+A320 = "C"
+A321 = "C"
+A332 = "D"
+A333 = "D"
+A339 = "D"
+A359 = "D"
+A35K = "D"
+A388 = "D"
+B37M = "C"
+B38M = "C"
+B39M = "C"
+B737 = "C"
+B738 = "C"
+B739 = "C"
+B744 = "D"
+B748 = "D"
+B752 = "D"
+B753 = "D"
+B762 = "D"
+B763 = "D"
+B764 = "D"
+B772 = "D"
+B773 = "D"
+B77L = "D"
+B77W = "D"
+B788 = "D"
+B789 = "D"
+B78X = "D"
+BCS1 = "C"
+BCS3 = "C"
+CRJ2 = "C"
+CRJ7 = "C"
+CRJ9 = "C"
+E170 = "C"
+E175 = "C"
+E75L = "C"
+E190 = "C"
+E195 = "C"
+DH8D = "C"
+AT76 = "B"
+C56X = "B"
+GLF5 = "C"
+GLF6 = "C"
+CL60 = "C"
+GLEX = "C"
+C172 = "A"
+C182 = "A"
+SR22 = "A"
+PA28 = "A"
+BE36 = "A"

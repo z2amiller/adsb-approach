@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Coverage</title>
+  <link rel="stylesheet" href="static/vendor/uPlot.min.css">
+  <link rel="stylesheet" href="static/style.css">
+  <script src="static/vendor/uPlot.iife.min.js"></script>
+  <script type="module" src="static/coverage.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1>Coverage</h1>
+    <nav class="nav">
+      <a id="arrivals-link" href="./">Arrivals</a>
+      <a id="search-link" href="search">Find a flight</a>
+    </nav>
+  </header>
+  <main>
+    <p id="stats-note"></p>
+    <form class="controls" onsubmit="return false">
+      <label class="span">Span
+        <select id="span">
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+          <option value="365">1 year</option>
+          <option value="all">All</option>
+        </select>
+      </label>
+      <label class="show-quiet" title="Runways with fewer than 25 approaches in this span are folded away: their daily medians rest on too few approaches to read.">
+        <input type="checkbox" id="show-quiet">
+        Quiet runways
+      </label>
+    </form>
+    <section aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Runways</h2>
+      <div id="coverage-charts" class="coverage-charts"></div>
+      <p id="stats-empty" class="empty" hidden>No coverage yet. The collector rebuilds it every hour; a database that
+        has just been migrated has none until the next rebuild.</p>
+      <p id="quiet-note" hidden></p>
+    </section>
+    <section aria-labelledby="marks-title">
+      <h2 id="marks-title">Before and after</h2>
+      <div id="marks"></div>
+    </section>
+    <section aria-labelledby="outcomes-title">
+      <h2 id="outcomes-title">How approaches ended</h2>
+      <div id="outcome-charts" class="outcome-charts"></div>
+    </section>
+    <div id="stats-error" hidden>
+      <p id="stats-error-message"></p>
+      <button type="button" id="stats-retry">Retry</button>
+    </div>
+  </main>
+  <footer class="credits">
+    <p>Contains information from <a href="https://adsb.lol/" target="_blank" rel="noopener noreferrer">adsb.lol</a>,
+      which is made available here under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank"
+      rel="noopener noreferrer">Open Database License (ODbL)</a>.</p>
+  </footer>
+</body>
+</html>

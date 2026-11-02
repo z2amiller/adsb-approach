@@ -1,0 +1,75 @@
+[airport]
+icao = "KNUQ"
+name = "MOFFETT FEDERAL AIRFIELD"
+enabled = true
+lat = 37.416144
+lon = -122.049131
+elevation_ft = 37
+metar = "KNUQ"
+declination_deg = 16.0
+geoid_offset_ft = -106.9
+parallel_groups = [["14L", "14R"], ["32L", "32R"]]
+
+[runways."14L"]
+enabled = true
+threshold_lat = 37.428922
+threshold_lon = -122.054606
+threshold_elev_ft = 6
+threshold_hae_m = -31.0
+course_true_deg = 157.794
+runway_length_ft = 9197
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+localizer_lat = 37.402989
+localizer_lon = -122.041283
+loc_width_deg = 3.97
+ils = "IMNQ 110.35 CAT 0"
+glide_path_deg = 3.0
+tch_ft = 53.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."14R"]
+enabled = true
+threshold_lat = 37.425225
+threshold_lon = -122.055028
+threshold_elev_ft = 4
+threshold_hae_m = -31.0
+course_true_deg = 157.802
+runway_length_ft = 8121
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 53.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."32L"]
+enabled = true
+threshold_lat = 37.406114
+threshold_lon = -122.045211
+threshold_elev_ft = 37
+threshold_hae_m = -21.5
+course_true_deg = 337.808
+runway_length_ft = 8121
+displaced_threshold_ft = 600
+localizer_offset_ft = 1000
+glide_path_deg = 3.5
+tch_ft = 55.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."32R"]
+enabled = true
+threshold_lat = 37.406039
+threshold_lon = -122.042847
+threshold_elev_ft = 31
+threshold_hae_m = -23.1
+course_true_deg = 337.802
+runway_length_ft = 9197
+displaced_threshold_ft = 191
+localizer_offset_ft = 1000
+localizer_lat = 37.431308
+localizer_lon = -122.055833
+loc_width_deg = 3.97
+ils = "INUQ 110.35 CAT 1"
+glide_path_deg = 3.0
+tch_ft = 57.0
+reference_source = "cifp:CIFP_260903"

@@ -1,0 +1,37 @@
+# Template: deploy/install.sh fills in the @...@ values and installs the result. Edit this file, not the copy.
+[Unit]
+Description=adsb-approach web: the read-only approach page and its API
+Wants=network-online.target
+After=network-online.target adsb-approach.service
+
+[Service]
+Type=exec
+User=@USER@
+Group=@GROUP@
+EnvironmentFile=-@ENV_FILE@
+ExecStart=@VENV@/bin/adsb-approach web --config @CONFIG@
+Restart=always
+RestartSec=5
+RestartSteps=5
+RestartMaxDelaySec=300
+TimeoutStopSec=15
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+# Everything read-only, the database's directory included: the page opens the database read-only, and SQLite can
+# read a WAL database it may not write to while the collector has it open or has left its -wal and -shm files behind.
+ProtectSystem=strict
+# Extra hardening for this unit alone: a LAN listener with no login, beyond what the collector (which listens to
+# nothing) needs.
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target

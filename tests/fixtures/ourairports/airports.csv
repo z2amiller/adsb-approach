@@ -1,0 +1,5 @@
+id,ident,type,name,latitude_deg,longitude_deg,elevation_ft,continent,iso_country,iso_region,municipality,scheduled_service,icao_code,iata_code,gps_code,local_code,home_link,wikipedia_link,keywords
+3741,KNUQ,medium_airport,Moffett Federal Airfield,37.4161,-122.049004,32,NA,US,US-CA,Mountain View,no,KNUQ,NUQ,KNUQ,NUQ,,https://en.wikipedia.org/wiki/Moffett_Federal_Airfield,
+3744,KOAK,large_airport,Oakland San Francisco Bay Airport,37.720085,-122.221184,9,NA,US,US-CA,Oakland,yes,KOAK,OAK,KOAK,OAK,https://www.iflyoak.com/,https://en.wikipedia.org/wiki/Oakland_International_Airport,Metro Oakland International
+3878,KSFO,large_airport,San Francisco International Airport,37.619806,-122.374821,13,NA,US,US-CA,San Francisco,yes,KSFO,SFO,KSFO,SFO,http://www.flysfo.com/,https://en.wikipedia.org/wiki/San_Francisco_International_Airport,"QSF, QBA"
+3883,KSJC,large_airport,Mineta San Jose International Airport,37.362452,-121.929188,62,NA,US,US-CA,San Jose,yes,KSJC,SJC,KSJC,SJC,https://www.flysanjose.com/,https://en.wikipedia.org/wiki/San_Jose_International_Airport,

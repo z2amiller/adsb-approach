@@ -1,0 +1,28 @@
+# Template: deploy/install.sh fills in the @...@ values and installs the result. Edit this file, not the copy.
+[Unit]
+Description=adsb-approach: approach scoring from the readsb JSON port
+Wants=network-online.target
+After=network-online.target readsb.service
+
+[Service]
+Type=exec
+User=@USER@
+Group=@GROUP@
+EnvironmentFile=-@ENV_FILE@
+ExecStart=@VENV@/bin/adsb-approach run --config @CONFIG@
+Restart=always
+RestartSec=5
+# RestartSteps/RestartMaxDelaySec: a persistent failure backs off from RestartSec to this over RestartSteps
+# restarts, instead of retrying every RestartSec forever and reloading the ~220 MB type database each time. Needs
+# systemd 254 or later (an older systemd ignores both with a warning, and just restarts every RestartSec).
+RestartSteps=5
+RestartMaxDelaySec=300
+TimeoutStopSec=30
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=@DATA_DIR@
+
+[Install]
+WantedBy=multi-user.target

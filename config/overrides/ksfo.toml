@@ -1,0 +1,12 @@
+# Hand-maintained procedure paths for KSFO. `adsb-approach build-config --overrides config/overrides` merges this file
+# into the generated config/airports/ksfo.toml, which is what the collector loads: edit paths here, not in that file.
+
+[[runways."28R".paths]]
+name = "quiet-bridge"                  # stable id: stored on approaches, used in URLs
+label = "Quiet Bridge"                 # shown on the page
+source = "SFO VOR R-095 inbound (292.0T, declination 17E); turn at 5.0 nm and join at 1.1 nm hand-fitted to 7,299 flights matched to the radial, 2026-09-13..10-23; fit-path on the same days gives 5.75 nm and 1.0 nm from 7,114 flights, within 125 ft"
+points = [
+  [37.488179, -121.966495],            # on R-095, 20.0 nm along 28R
+  [37.582913, -122.259838],            # on R-095, 5.0 nm along: the turn
+  [37.605340, -122.337623],            # the join, on the 28R centreline 1.1 nm out
+]

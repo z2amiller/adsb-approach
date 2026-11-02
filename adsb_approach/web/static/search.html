@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Find a flight</title>
+  <link rel="stylesheet" href="static/vendor/uPlot.min.css">
+  <link rel="stylesheet" href="static/style.css">
+  <script src="static/vendor/uPlot.iife.min.js"></script>
+  <script type="module" src="static/search.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1>Find a flight</h1>
+    <nav class="nav">
+      <a id="approaches-link" href="./">Approaches</a>
+      <a id="coverage-link" href="coverage">Coverage</a>
+    </nav>
+  </header>
+  <main>
+    <form id="search-form" class="filters" role="search">
+      <input id="q" type="search" name="q" class="query" placeholder="Callsign, registration or hex" aria-label="Callsign, registration or hex" required minlength="2" autocomplete="off" spellcheck="false">
+      <button type="submit">Search</button>
+      <label class="window">Window
+        <select id="window">
+          <option value="1h">1 hour</option>
+          <option value="6h">6 hours</option>
+          <option value="24h">24 hours</option>
+          <option value="7d">7 days</option>
+          <option value="all" selected>All</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+      <label class="day" hidden>From <input id="from" type="date"></label>
+      <label class="day" hidden>To <input id="to" type="date"></label>
+    </form>
+    <p id="counts" role="status"></p>
+    <div class="table-scroll">
+      <table id="results" class="log" hidden>
+        <thead>
+          <tr><th>Time</th><th>Flight</th><th>Type</th><th>Airport</th><th>Attempts</th><th>1,000 ft gate</th><th>Flags</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p id="results-empty" class="empty" hidden></p>
+    <button type="button" id="more" hidden>Load more</button>
+  </main>
+  <footer class="credits">
+    <p>Contains information from <a href="https://adsb.lol/" target="_blank" rel="noopener noreferrer">adsb.lol</a>,
+      which is made available here under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank"
+      rel="noopener noreferrer">Open Database License (ODbL)</a>.</p>
+  </footer>
+  <aside id="drawer" class="drawer" aria-labelledby="drawer-title" hidden>
+    <header>
+      <h2 id="drawer-title" tabindex="-1"></h2>
+      <button type="button" id="drawer-close" aria-label="Close">×</button>
+    </header>
+    <p id="drawer-emergency" class="emergency" hidden></p>
+    <nav id="drawer-attempts" class="attempts" aria-label="Attempts of this arrival"></nav>
+    <p class="links"><a id="drawer-tar1090" target="_blank" rel="noopener">Open in tar1090</a>
+      <a id="drawer-globe" target="_blank" rel="noopener noreferrer" hidden></a></p>
+    <p id="drawer-external" class="external" hidden></p>
+    <p id="drawer-norm" class="norm" hidden></p>
+    <p id="drawer-path" class="path-note" hidden><span id="drawer-path-chip" class="path-chip"></span> <span id="drawer-path-source"></span></p>
+    <figure><figcaption>Height above threshold (ft), with the published glide path</figcaption><div id="chart-height" class="chart"></div></figure>
+    <figure><figcaption id="chart-cross-title">Cross-track from the centreline (ft)</figcaption><div id="chart-cross" class="chart"></div></figure>
+    <figure><figcaption>Ground speed and wind-corrected speed (kt)</figcaption><div id="chart-speed" class="chart"></div></figure>
+    <div class="table-scroll">
+      <table id="drawer-gates" class="gates">
+        <thead>
+          <tr><th>Gate</th><th>Distance</th><th>Glide path</th><th>Localizer</th><th>Speed</th><th>Wind-corrected</th><th>Sink</th><th>Norm height</th><th>Norm speed</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p id="drawer-metar" class="metar"></p>
+  </aside>
+  <aside id="flight-drawer" class="drawer" aria-labelledby="flight-title" hidden>
+    <header>
+      <h2 id="flight-title" tabindex="-1"></h2>
+      <button type="button" id="flight-close" aria-label="Close">×</button>
+    </header>
+    <p id="flight-heard"></p>
+    <div id="flight-emergency" class="emergency" hidden></div>
+    <p class="links"><a id="flight-tar1090" target="_blank" rel="noopener">Open in tar1090</a>
+      <a id="flight-globe" target="_blank" rel="noopener noreferrer" hidden></a></p>
+    <dl id="flight-facts" class="facts"></dl>
+  </aside>
+</body>
+</html>

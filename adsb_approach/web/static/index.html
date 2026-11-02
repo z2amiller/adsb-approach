@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Approaches</title>
+  <link rel="stylesheet" href="static/vendor/uPlot.min.css">
+  <link rel="stylesheet" href="static/style.css">
+  <script src="static/vendor/uPlot.iife.min.js"></script>
+  <script type="module" src="static/app.js"></script>
+</head>
+<body>
+  <div id="banner" class="banner" role="status" hidden></div>
+  <header class="top">
+    <h1>Approaches</h1>
+    <span id="stream-state" class="stream-state" data-state="connecting">connecting</span>
+    <nav class="nav">
+      <a id="coverage-link" href="coverage">Coverage</a>
+      <a id="search-link" href="search">Find a flight</a>
+    </nav>
+  </header>
+  <main>
+    <section class="live" aria-labelledby="live-title">
+      <h2 id="live-title">On final now</h2>
+      <p id="live-empty" class="empty">No aircraft on final.</p>
+      <ol id="live" class="cards"></ol>
+    </section>
+    <section class="arrivals" aria-labelledby="log-title">
+      <h2 id="log-title">Arrivals</h2>
+      <form id="filters" class="filters">
+        <div class="filter-group" data-key="airport"><span class="label">Airport</span><div class="chips"></div></div>
+        <div class="filter-group" data-key="runway"><span class="label">Runway</span><div class="chips"></div></div>
+        <div class="filter-group" data-key="outcome"><span class="label">Outcome</span><div class="chips"></div></div>
+        <details class="filter-group" data-key="flags"><summary class="label">Flags</summary><div class="chips"></div></details>
+        <label class="window">Window
+          <select id="window">
+            <option value="1h">1 hour</option>
+            <option value="6h">6 hours</option>
+            <option value="24h" selected>24 hours</option>
+            <option value="7d">7 days</option>
+            <option value="all">All</option>
+          </select>
+        </label>
+        <label class="attention" title="Attention only shows go-arounds, touch-and-goes, abandoned approaches, and unstable, steep, shallow or late-established approaches."><input type="checkbox" id="attention"> Attention only</label>
+        <label class="rotorcraft" title="Helicopters (ADS-B category A7) are hidden unless this is checked."><input type="checkbox" id="rotorcraft"> Helicopters</label>
+        <label class="ga" title="Light GA aircraft (configured type codes) are hidden unless this is checked."><input type="checkbox" id="ga"> GA</label>
+        <label class="approach-kind" title="Straight-in shows approaches flown along the runway's centreline; Path shows those flown along a procedure path, such as the Quiet Bridge Visual.">Approach
+          <select id="approach-kind">
+            <option value="all" selected>All</option>
+            <option value="straight">Straight-in</option>
+            <option value="path">Path</option>
+          </select>
+        </label>
+        <button type="button" id="clear-filters">Clear filters</button>
+      </form>
+      <div class="table-scroll">
+        <table id="log" class="log">
+          <thead>
+            <tr><th>Time</th><th>Flight</th><th>Type</th><th>Airport</th><th>Attempts</th><th>1,000 ft gate</th><th>Flags</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="log-empty" class="empty" hidden>No arrivals match these filters.</p>
+      <button type="button" id="more" hidden>Load more</button>
+    </section>
+  </main>
+  <footer class="credits">
+    <p>Contains information from <a href="https://adsb.lol/" target="_blank" rel="noopener noreferrer">adsb.lol</a>,
+      which is made available here under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank"
+      rel="noopener noreferrer">Open Database License (ODbL)</a>.</p>
+  </footer>
+  <aside id="drawer" class="drawer" aria-labelledby="drawer-title" hidden>
+    <header>
+      <h2 id="drawer-title" tabindex="-1"></h2>
+      <button type="button" id="drawer-close" aria-label="Close">×</button>
+    </header>
+    <p id="drawer-emergency" class="emergency" hidden></p>
+    <nav id="drawer-attempts" class="attempts" aria-label="Attempts of this arrival"></nav>
+    <p class="links"><a id="drawer-tar1090" target="_blank" rel="noopener">Open in tar1090</a>
+      <a id="drawer-globe" target="_blank" rel="noopener noreferrer" hidden></a></p>
+    <p id="drawer-external" class="external" hidden></p>
+    <p id="drawer-norm" class="norm" hidden></p>
+    <p id="drawer-path" class="path-note" hidden><span id="drawer-path-chip" class="path-chip"></span> <span id="drawer-path-source"></span></p>
+    <figure><figcaption>Height above threshold (ft), with the published glide path</figcaption><div id="chart-height" class="chart"></div></figure>
+    <figure><figcaption id="chart-cross-title">Cross-track from the centreline (ft)</figcaption><div id="chart-cross" class="chart"></div></figure>
+    <figure><figcaption>Ground speed and wind-corrected speed (kt)</figcaption><div id="chart-speed" class="chart"></div></figure>
+    <div class="table-scroll">
+      <table id="drawer-gates" class="gates">
+        <thead>
+          <tr><th>Gate</th><th>Distance</th><th>Glide path</th><th>Localizer</th><th>Speed</th><th>Wind-corrected</th><th>Sink</th><th>Norm height</th><th>Norm speed</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p id="drawer-metar" class="metar"></p>
+  </aside>
+</body>
+</html>

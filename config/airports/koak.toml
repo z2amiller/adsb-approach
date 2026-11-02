@@ -1,0 +1,135 @@
+[airport]
+icao = "KOAK"
+name = "OAKLAND SAN FRANCISCO BAY"
+enabled = true
+lat = 37.721261
+lon = -122.22115
+elevation_ft = 9
+metar = "KOAK"
+declination_deg = 14.0
+geoid_offset_ft = -106.6
+parallel_groups = [["10L", "10R"], ["28L", "28R"]]
+
+[runways."10L"]
+enabled = true
+threshold_lat = 37.730469
+threshold_lon = -122.222181
+threshold_elev_ft = 6
+threshold_hae_m = -30.8
+course_true_deg = 112.249
+runway_length_ft = 5457
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 2.79
+tch_ft = 49.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."10R"]
+enabled = true
+threshold_lat = 37.728708
+threshold_lon = -122.225903
+threshold_elev_ft = 8
+threshold_hae_m = -30.1
+course_true_deg = 112.229
+runway_length_ft = 6213
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 2.82
+tch_ft = 50.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."12"]
+enabled = true
+threshold_lat = 37.720064
+threshold_lon = -122.242114
+threshold_elev_ft = 8
+threshold_hae_m = -30.0
+course_true_deg = 130.114
+runway_length_ft = 10520
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+localizer_lat = 37.700628
+localizer_lon = -122.212958
+loc_width_deg = 3.64
+ils = "IAAZ 111.90 CAT 1"
+glide_path_deg = 2.75
+tch_ft = 55.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."15"]
+enabled = true
+threshold_lat = 37.740292
+threshold_lon = -122.222808
+threshold_elev_ft = 1
+threshold_hae_m = -32.0
+course_true_deg = 164.489
+runway_length_ft = 3376
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 50.0
+reference_source = "cifp:CIFP_260903+assumed"
+
+[runways."28L"]
+enabled = true
+threshold_lat = 37.722275
+threshold_lon = -122.206008
+threshold_elev_ft = 8
+threshold_hae_m = -30.0
+course_true_deg = 292.241
+runway_length_ft = 6213
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 55.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."28R"]
+enabled = true
+threshold_lat = 37.724814
+threshold_lon = -122.204708
+threshold_elev_ft = 6
+threshold_hae_m = -30.7
+course_true_deg = 292.259
+runway_length_ft = 5457
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+localizer_lat = 37.731819
+localizer_lon = -122.226353
+loc_width_deg = 5.93
+ils = "IOAK 109.90 CAT 1"
+glide_path_deg = 3.0
+tch_ft = 53.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."30"]
+enabled = true
+threshold_lat = 37.701694
+threshold_lon = -122.214561
+threshold_elev_ft = 9
+threshold_hae_m = -29.8
+course_true_deg = 310.131
+runway_length_ft = 10520
+displaced_threshold_ft = 114
+localizer_offset_ft = 1000
+localizer_lat = 37.724961
+localizer_lon = -122.249469
+loc_width_deg = 3.04
+ils = "IINB 108.70 CAT 3"
+glide_path_deg = 3.0
+tch_ft = 55.0
+reference_source = "cifp:CIFP_260903"
+
+[runways."33"]
+enabled = true
+threshold_lat = 37.731364
+threshold_lon = -122.219675
+threshold_elev_ft = 4
+threshold_hae_m = -31.3
+course_true_deg = 344.491
+runway_length_ft = 3376
+displaced_threshold_ft = 0
+localizer_offset_ft = 1000
+glide_path_deg = 3.0
+tch_ft = 50.0
+reference_source = "cifp:CIFP_260903+assumed"
