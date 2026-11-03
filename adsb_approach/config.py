@@ -118,7 +118,9 @@ class ExternalCfg:
     watch_max_min: float = 20.0                   # how long an aircraft stays watched after a go-around or touch-and-go
     # A watched aircraft is asked about only once the receiver has given no position of it for more than this long, and
     # no request goes out while the receiver places every watched aircraft. adsb.lol adds to a track only where the
-    # receiver has lost it, and a key's quota is counted in requests. 0 asks about every watched aircraft.
+    # receiver has lost it, and a key's quota is counted in requests. 0 asks about every watched aircraft. It compares
+    # readsb's position times, on the receiver host's clock, with this host's, so a remote [source] host needs both
+    # clocks in step (NTP): skew moves every first ask by as much.
     quiet_s: float = 8.0
     # A file holding the adsb.lol key, sent as the x-api-key header: re-api.adsb.lol checks it (a bogus key got a 401 on
     # 2026-10-23). It is read again at every poll, so a new key needs no restart, and only its path is kept here, so

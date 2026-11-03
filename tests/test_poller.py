@@ -373,6 +373,28 @@ def test_a_go_around_stays_quiet_or_heard_through_its_watch_and_a_stranger_is_ne
     assert w.quiet_hexes(T0 + 205.0, 8.0) == ["a1"]
 
 
+def test_a_start_on_an_adsb_lol_position_is_not_the_receiver_hearing_it():
+    """A go-around's next attempt can establish on adsb.lol's positions below the receiver's coverage: the aircraft
+    stays quiet, so it is still asked about."""
+    w = WatchList(1200.0)
+    started(w, "a1", 1, T0)
+    w.heard(fix("a1", T0 + 50.0))
+    completed(w, "a1", 1, T0 + 60.0, "go_around")
+    w.on_event("approach.started", T0 + 300.0, 2, 102, {"hex": "a1", "runway": "28R", "origin": ORIGIN})
+    assert w.quiet_hexes(T0 + 301.0, 8.0) == ["a1"]
+
+
+def test_a_runway_changes_new_start_moves_the_receivers_last_position_nothing_back():
+    """The change closes one attempt and starts the next, dated where the new stretch began, which can be before the
+    receiver's newest position of the aircraft."""
+    w = WatchList(1200.0)
+    started(w, "a1", 1, T0)
+    w.heard(fix("a1", T0 + 13.0))
+    completed(w, "a1", 1, T0 + 13.0, "runway_change")
+    started(w, "a1", 2, T0 + 3.0)
+    assert w.quiet_hexes(T0 + 21.0, 8.0) == [] and w.quiet_hexes(T0 + 21.5, 8.0) == ["a1"]
+
+
 def test_quiet_s_zero_asks_about_every_watched_aircraft():
     w = WatchList(1200.0)
     started(w, "a1", 1, T0)

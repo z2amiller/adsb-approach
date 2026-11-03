@@ -210,13 +210,16 @@ class WatchList:
 
     def on_event(self, kind: str, t: float, approach_id: int | None, flight_id: int | None, payload: dict) -> None:
         """EventBus subscriber. Events about other things change nothing, and nor does any other kind of completion
-        for an aircraft the list never held; a go-around's or touch-and-go's watches it all the same. A start comes from
-        a receiver position, so the aircraft it puts on the list is heard at `t`."""
+        for an aircraft the list never held; a go-around's or touch-and-go's watches it all the same. A start on a
+        receiver position counts as the receiver placing the aircraft at `t`; one on adsb.lol's (a go-around's next
+        attempt or a sidestep below the receiver's coverage) does not. Neither moves the receiver's time back: a runway
+        change's new attempt is dated where its stretch began. A watch that ends is forgotten in hexes()."""
         if kind == "approach.started":
             hexid = payload["hex"]
             self._open.setdefault(hexid, set()).add(approach_id)
             self._until.pop(hexid, None)
-            self._heard[hexid] = max(self._heard.get(hexid, t), t)
+            if payload.get("origin") != ORIGIN:
+                self._heard[hexid] = max(self._heard.get(hexid, t), t)
         elif kind == "approach.completed":
             hexid = payload["hex"]
             open_ids = self._open.get(hexid, set())
@@ -225,8 +228,6 @@ class WatchList:
                 self._open.pop(hexid, None)
             if payload.get("outcome") in KEEP_WATCHING:
                 self._until[hexid] = t + self.watch_max_s
-            elif hexid not in self._open and hexid not in self._until:
-                self._heard.pop(hexid, None)
 
     def heard(self, pos: Position) -> None:
         """The receiver placed `pos.hex` at `pos.t`: kept for a watched aircraft (an older position moves nothing back),
