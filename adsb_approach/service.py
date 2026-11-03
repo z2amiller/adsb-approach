@@ -80,16 +80,21 @@ def _load_typedb(path: str | None) -> TypeDb | None:
     return TypeDb.load(path)
 
 
-def _drain(pipe: Pipeline, store: Store, buffer: deque[Position]) -> None:
+def _drain(pipe: Pipeline, store: Store, buffer: deque[Position],
+           heard: Callable[[Position], None] | None = None) -> None:
     """Process everything buffered right now, in arrival order, as one commit; an empty buffer opens no transaction.
     Taking the positions out before processing them -- instead of popping them one at a time -- means _ingest can
-    keep appending, untouched, for the whole of this call: nothing here awaits, so nothing else runs in between."""
+    keep appending, untouched, for the whole of this call: nothing here awaits, so nothing else runs in between.
+    `heard`, when given, is told of each position just before it is processed: the poller's watch list, which keeps
+    when the receiver last placed each watched aircraft."""
     if not buffer:
         return
     taken = list(buffer)
     buffer.clear()
     store.begin_batch()
     for pos in taken:
+        if heard is not None:
+            heard(pos)
         pipe.process(pos)
     store.commit_batch()
 
@@ -110,7 +115,8 @@ async def _ingest(cfg: Config, stats: FeedStats, backoff_initial_s: float, buffe
 
 
 async def _drain_every(pipe: Pipeline, store: Store, buffer: deque[Position], overflow: asyncio.Event,
-                       interval_s: float, *, sleep: Callable[[float], Awaitable[None]] = asyncio.sleep) -> None:
+                       interval_s: float, *, sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+                       heard: Callable[[Position], None] | None = None) -> None:
     """Drain the buffer once every interval_s, or at once when _ingest signals overflow. A lock-free gap of at least
     MIN_LOCK_FREE_S always follows a drain -- one that ran long or one overflow triggered early included -- since
     that gap, not the interval between ticks, is what gives a waiting writer its turn (see MIN_LOCK_FREE_S)."""
@@ -120,7 +126,7 @@ async def _drain_every(pipe: Pipeline, store: Store, buffer: deque[Position], ov
         except TimeoutError:
             pass
         overflow.clear()
-        _drain(pipe, store, buffer)
+        _drain(pipe, store, buffer, heard)
         await sleep(MIN_LOCK_FREE_S)
 
 
@@ -254,8 +260,14 @@ async def run_live(cfg: Config, *, stop: asyncio.Event, metar_path: str | Path |
         metar_ids = sorted({a.metar for a in cfg.enabled_airports()})
         buffer: deque[Position] = deque()
         overflow = asyncio.Event()
+        # The poller fills the same buffer _ingest does, and its stores commit on their own on the event loop, so a
+        # poll can never land inside a drain's batch: _drain has no await in it, and must not gain one. The drain tells
+        # its watch list what the receiver places, so it asks only about aircraft the receiver has lost.
+        poller = Poller(cfg, store, pipe.run_id, buffer, fetch=reply_fetch) if cfg.external.enabled else None
+        heard = poller.watch.heard if poller is not None else None
         tasks = [asyncio.create_task(_ingest(cfg, stats, backoff_initial_s, buffer, overflow), name="ingest"),
-                 asyncio.create_task(_drain_every(pipe, store, buffer, overflow, COMMIT_INTERVAL_S), name="drain"),
+                 asyncio.create_task(_drain_every(pipe, store, buffer, overflow, COMMIT_INTERVAL_S, heard=heard),
+                                     name="drain"),
                  asyncio.create_task(_report_health(pipe, stats, metar_ids, health_interval_s), name="health")]
         if cfg.service.metar_interval_s > 0 and metar_ids:
             tasks.append(asyncio.create_task(poll_metars(weather, metar_ids, cfg.service.metar_interval_s, fetch=fetch,
@@ -265,10 +277,7 @@ async def run_live(cfg: Config, *, stop: asyncio.Event, metar_path: str | Path |
             first_delay_s = fleet_first_delay(norms.built_at, interval_s, now=time.time())
             tasks.append(asyncio.create_task(rebuild_fleet_every(cfg, pipe, interval_s, first_delay_s=first_delay_s),
                                              name="fleet"))
-        if cfg.external.enabled:
-            # The poller fills the same buffer _ingest does, and its stores commit on their own on the event loop, so a
-            # poll can never land inside a drain's batch: _drain has no await in it, and must not gain one.
-            poller = Poller(cfg, store, pipe.run_id, buffer, fetch=reply_fetch)
+        if poller is not None:
             pipe.events.subscribe(poller.watch.on_event)
             tasks.append(asyncio.create_task(run_poller(poller), name="external"))
             log.info("run %d: merging adsb.lol positions from %s every %g s, %s", pipe.run_id, cfg.external.url,

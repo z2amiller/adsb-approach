@@ -356,8 +356,13 @@ def test_the_poller_is_off_by_default_and_its_section_changes_no_replay(tmp_path
 
 def test_the_poller_defaults_match_the_design():
     ext = ExternalCfg()
-    assert (ext.url, ext.poll_interval_s, ext.clock_offset_s, ext.watch_max_min, ext.timeout_s, ext.backoff_min) == (
-        "https://re-api.adsb.lol/", 2.0, 0.10, 20.0, 10.0, 15.0)
+    assert (ext.url, ext.poll_interval_s, ext.clock_offset_s, ext.watch_max_min, ext.timeout_s, ext.backoff_min,
+            ext.quiet_s) == ("https://re-api.adsb.lol/", 2.0, 0.10, 20.0, 10.0, 15.0, 8.0)
+
+
+def test_quiet_s_zero_is_allowed_and_means_every_watched_aircraft(tmp_path):
+    main = write_cfg(tmp_path, '[service]\nairports_dir = "airports"\n[external]\nquiet_s = 0\n')
+    assert load_config(main).external.quiet_s == 0.0
 
 
 def test_the_example_config_loads_with_the_poller_off():
@@ -385,6 +390,7 @@ def test_a_retired_external_key_is_named_and_called_retired(tmp_path, key):
     ("poll_interval_s = 0", r"\[external\]: poll_interval_s must be greater than 0, not 0\.0"),
     ("watch_max_min = -1", r"\[external\]: watch_max_min must be greater than 0, not -1\.0"),
     ("clock_offset_s = -0.1", r"\[external\]: clock_offset_s must be 0 or more, not -0\.1"),
+    ("quiet_s = -1", r"\[external\]: quiet_s must be 0 or more, not -1\.0"),
     ('url = "ftp://re-api.adsb.lol/"', r"\[external\]: url must be an http\(s\) URL, not 'ftp://re-api\.adsb\.lol/'"),
 ])
 def test_a_bad_external_setting_names_its_section_and_key(tmp_path, line, message):

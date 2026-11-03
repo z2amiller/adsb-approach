@@ -23,7 +23,7 @@ TOUCHDOWN_HAT_FT = 100.0          # ground contact, or below this height inside 
 ROLLOUT_GS_KT = 30.0              # touched down and at or below this ground speed: taxiing, too slow for a touch-and-go
 
 
-def _coarse(pos: Position) -> bool:
+def coarse(pos: Position) -> bool:
     """Too coarse to use: radar-derived TIS-B positions (readsb sources tisb, tisb_icao, tisb_other, tisb_trackfile), even
     for an ICAO address, and every non-ICAO address (hex prefixed ~: TIS-B track files, ADS-R and ADS-B others)."""
     return pos.source.startswith("tisb") or pos.hex.startswith("~")
@@ -231,7 +231,7 @@ class Matcher:
         if pos.t - self._last_tick >= 1.0:
             self.tick(pos.t)          # first, so a position after a feed-wide gap cannot extend an attempt that went quiet
         self.clock = max(self.clock, pos.t)
-        if _coarse(pos):
+        if coarse(pos):
             return                    # never scored, and never taken as a go-around or a landing either
         self._feed_climb_out(pos)
         self._after_close_checks(pos, track)
@@ -1036,7 +1036,7 @@ class Matcher:
             return vr > 300
         if pos.alt_baro is None:
             return False
-        prev = next((p for p in list(track.history)[-2::-1] if not _coarse(p)), None)
+        prev = next((p for p in list(track.history)[-2::-1] if not coarse(p)), None)
         return prev is not None and prev.alt_baro is not None and 0 < pos.t - prev.t <= 60.0 and pos.alt_baro - prev.alt_baro >= 200
 
     def _publish(self, kind: str, t: float, att: Attempt, payload: dict) -> None:

@@ -23,6 +23,7 @@ from pathlib import Path
 
 from . import __version__
 from .config import Config
+from .matcher import coarse
 from .model import Outcome, Position
 from .sources.base import position_from_readsb
 from .store.db import Store, current_poll_pause
@@ -199,20 +200,27 @@ class WatchList:
     open, and after a go-around or touch-and-go closes it for `watch_max_s` more, or until its next attempt starts,
     whichever comes first. A runway change closes one attempt and opens the next in one breath, so the aircraft never
     leaves the list. A go_around or touch_and_go completion sets that deadline even for an aircraft the list never
-    held."""
+    held. It also keeps when the receiver last placed each watched aircraft (heard), so the poller can ask about only
+    the ones the receiver has lost (quiet_hexes)."""
 
     def __init__(self, watch_max_s: float) -> None:
         self.watch_max_s = watch_max_s
         self._open: dict[str, set[int | None]] = {}      # hex -> the ids of its open approaches
         self._until: dict[str, float] = {}               # hex -> when its watch after a go-around ends
+        self._heard: dict[str, float] = {}               # hex -> t of the receiver's newest position of it, while watched
 
     def on_event(self, kind: str, t: float, approach_id: int | None, flight_id: int | None, payload: dict) -> None:
         """EventBus subscriber. Events about other things change nothing, and nor does any other kind of completion
-        for an aircraft the list never held; a go-around's or touch-and-go's watches it all the same."""
+        for an aircraft the list never held; a go-around's or touch-and-go's watches it all the same. A start on a
+        receiver position counts as the receiver placing the aircraft at `t`; one on adsb.lol's (a go-around's next
+        attempt or a sidestep below the receiver's coverage) does not. Neither moves the receiver's time back: a runway
+        change's new attempt is dated where its stretch began. A watch that ends is forgotten in hexes()."""
         if kind == "approach.started":
             hexid = payload["hex"]
             self._open.setdefault(hexid, set()).add(approach_id)
             self._until.pop(hexid, None)
+            if payload.get("origin") != ORIGIN:
+                self._heard[hexid] = max(self._heard.get(hexid, t), t)
         elif kind == "approach.completed":
             hexid = payload["hex"]
             open_ids = self._open.get(hexid, set())
@@ -222,10 +230,28 @@ class WatchList:
             if payload.get("outcome") in KEEP_WATCHING:
                 self._until[hexid] = t + self.watch_max_s
 
+    def heard(self, pos: Position) -> None:
+        """The receiver placed `pos.hex` at `pos.t`: kept for a watched aircraft (an older position moves nothing back),
+        ignored for any other, for adsb.lol's own positions, and for a position the matcher drops as too coarse to use
+        (TIS-B), since an aircraft the receiver has only as that is lost to the approach all the same."""
+        if pos.origin == ORIGIN or coarse(pos) or (pos.hex not in self._open and pos.hex not in self._until):
+            return
+        self._heard[pos.hex] = max(self._heard.get(pos.hex, pos.t), pos.t)
+
     def hexes(self, now: float) -> list[str]:
         """The aircraft to ask about at `now`, sorted, with every watch that ended before `now` forgotten."""
         self._until = {h: until for h, until in self._until.items() if until >= now}
-        return sorted(self._open.keys() | self._until.keys())
+        watched = self._open.keys() | self._until.keys()
+        self._heard = {h: t for h, t in self._heard.items() if h in watched}
+        return sorted(watched)
+
+    def quiet_hexes(self, now: float, quiet_s: float) -> list[str]:
+        """The watched aircraft the receiver has given no position of for more than `quiet_s` at `now`, sorted; with
+        quiet_s 0, every watched aircraft."""
+        hexes = self.hexes(now)
+        if quiet_s <= 0:
+            return hexes
+        return [h for h in hexes if now - self._heard.get(h, -math.inf) > quiet_s]
 
 
 def replay_merge(local: Iterable[Position], external: Iterable[tuple[float, Position]],
@@ -245,8 +271,9 @@ def replay_merge(local: Iterable[Position], external: Iterable[tuple[float, Posi
 
 
 class Poller:
-    """The poller task of `run`. A step sends at most one request: none while the watch list is empty or a pause from
-    external_polls lasts, and none sooner than poll_interval_s after the last, so polls never overlap. The request runs
+    """The poller task of `run`. A step sends at most one request, for the watched aircraft the receiver has lost
+    (quiet_s): none while there are none or a pause from external_polls lasts, and none sooner than poll_interval_s
+    after the last, so polls never overlap. The collector tells the watch list what the receiver places. The request runs
     in a worker thread; the rest runs on the event loop through the collector's own Store, so each poll's row and
     positions commit on their own, outside the drain's batch. Replays build no Poller, so they never fetch."""
 
@@ -262,7 +289,7 @@ class Poller:
     async def step(self) -> float:
         """Poll if a poll is due and allowed, and return how long to sleep before the next step."""
         now = self.now()
-        hexes = self.watch.hexes(now)
+        hexes = self.watch.quiet_hexes(now, self.ext.quiet_s)
         if not hexes:
             return IDLE_S
         pause = current_poll_pause(self.store.conn, self.ext.backoff_min * 60.0, now)

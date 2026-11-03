@@ -116,6 +116,12 @@ class ExternalCfg:
     # much later than the local receiver does.
     clock_offset_s: float = 0.10
     watch_max_min: float = 20.0                   # how long an aircraft stays watched after a go-around or touch-and-go
+    # A watched aircraft is asked about only once the receiver has given no position of it for more than this long, and
+    # no request goes out while the receiver places every watched aircraft. adsb.lol adds to a track only where the
+    # receiver has lost it, and a key's quota is counted in requests. 0 asks about every watched aircraft. It compares
+    # readsb's position times, on the receiver host's clock, with this host's, so a remote [source] host needs both
+    # clocks in step (NTP): skew moves every first ask by as much.
+    quiet_s: float = 8.0
     # A file holding the adsb.lol key, sent as the x-api-key header: re-api.adsb.lol checks it (a bogus key got a 401 on
     # 2026-10-23). It is read again at every poll, so a new key needs no restart, and only its path is kept here, so
     # the key itself never reaches a log or a page. Empty sends no key.
@@ -289,7 +295,8 @@ def _check_external(where: str, ext: ExternalCfg) -> None:
     """The poller's `url` is an http(s) base, not a template; the globe URL is not a template either (it takes its
     query string the same way [service] tar1090_url does, in tar1090_link/tar1090_live_link) and empty is explicitly
     allowed -- that is how the drawer's second link is turned off; every duration is positive, so a zero cannot turn
-    off the rate limit or a cap, and `clock_offset_s` may be zero (no shift) but not negative."""
+    off the rate limit or a cap, and `clock_offset_s` may be zero (no shift) and `quiet_s` zero (ask about every watched
+    aircraft) but neither may be negative."""
     if ext.globe_url and not ext.globe_url.startswith(("https://", "http://")):
         raise ValueError(f"{where}: globe_url must be empty, or an http(s) URL, not {ext.globe_url!r}")
     if not ext.url.startswith(("https://", "http://")):
@@ -297,8 +304,9 @@ def _check_external(where: str, ext: ExternalCfg) -> None:
     for key in EXTERNAL_POSITIVE:
         if getattr(ext, key) <= 0:
             raise ValueError(f"{where}: {key} must be greater than 0, not {getattr(ext, key)}")
-    if ext.clock_offset_s < 0:
-        raise ValueError(f"{where}: clock_offset_s must be 0 or more, not {ext.clock_offset_s}")
+    for key in ("clock_offset_s", "quiet_s"):
+        if getattr(ext, key) < 0:
+            raise ValueError(f"{where}: {key} must be 0 or more, not {getattr(ext, key)}")
 
 
 def _event_day(where: str, value: Any) -> str:
