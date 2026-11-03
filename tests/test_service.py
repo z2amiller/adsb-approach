@@ -261,6 +261,14 @@ def test_drain_processes_the_buffer_in_order_and_opens_no_transaction_when_it_is
     assert len(buffer) == 0                                # taken, not left for the next drain to repeat
 
 
+def test_drain_tells_heard_each_position_before_processing_it():
+    calls: list = []
+    pipe = SimpleNamespace(process=lambda pos: calls.append(("process", pos)))
+    store = SimpleNamespace(begin_batch=lambda: None, commit_batch=lambda: None)
+    _drain(pipe, store, deque([1, 2]), heard=lambda pos: calls.append(("heard", pos)))
+    assert calls == [("heard", 1), ("process", 1), ("heard", 2), ("process", 2)]
+
+
 def test_ingest_only_buffers_and_signals_overflow_once_past_the_cap(monkeypatch, caplog):
     """_ingest must not touch the store or the pipeline at all -- that is _drain's job -- and positions already
     buffered before a drain must not be processed early. Past MAX_BUFFERED_POSITIONS it logs once and sets
@@ -501,6 +509,36 @@ def test_run_merges_adsb_lol_positions_and_lands_an_approach_the_receiver_lost(t
         assert origins["adsb.lol"] > origins["local"] + cfg.detection.lost_timeout_s
     finally:
         conn.close()
+
+
+@pytest.mark.parametrize("quiet_s, asks", [(30.0, False), (0.0, True)])
+def test_a_live_run_asks_nothing_about_an_aircraft_the_receiver_still_hears(tmp_path, monkeypatch, quiet_s, asks):
+    """The drain tells the poller what the receiver places. With the feed's positions dated now, the approach they
+    establish stays heard for quiet_s after the last of them, so nothing is asked; quiet_s = 0 asks at once."""
+    cfg = load_config(ROOT / "config" / "adsb-approach.example.toml")
+    db = tmp_path / "live.sqlite"
+    cfg.service.db_path, cfg.service.typedb_path, cfg.service.metar_interval_s = str(db), None, 0
+    cfg.external.enabled, cfg.external.poll_interval_s, cfg.external.quiet_s = True, 0.01, quiet_s
+    monkeypatch.setattr("adsb_approach.service.COMMIT_INTERVAL_S", 0.05)
+    monkeypatch.setattr("adsb_approach.poller.IDLE_S", 0.05)
+    seen, _ = lost_at_800_ft(cfg)
+    shift = time.time() - seen[-1].t
+    lines = [json.dumps(readsb_object(dataclasses.replace(p, t=p.t + shift))).encode() + b"\n" for p in seen]
+    calls: list[str] = []
+
+    def adsb_lol(url: str, timeout_s: float, api_key: str | None) -> dict:
+        calls.append(url)
+        return reapi_reply([], now=time.time())
+
+    first: list[float] = []
+
+    def established_a_second_ago() -> bool:
+        if not first and db_rows(db, "SELECT 1 FROM approaches"):
+            first.append(time.monotonic())
+        return bool(first) and time.monotonic() - first[0] > 1.0
+
+    asyncio.run(run_against_feed(cfg, lines, established_a_second_ago, reply_fetch=adsb_lol))
+    assert bool(calls) is asks
 
 
 def test_run_with_the_poller_off_never_polls_and_marks_no_merge(tmp_path, monkeypatch):

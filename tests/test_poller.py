@@ -342,6 +342,44 @@ def test_the_watch_list_ignores_events_it_does_not_follow():
     assert w.hexes(T0) == []
 
 
+def test_an_aircraft_is_quiet_once_the_receiver_has_not_placed_it_for_quiet_s():
+    """The start is a receiver position, so a new watch begins heard; only the receiver's own positions count."""
+    w = WatchList(1200.0)
+    started(w, "a1", 1, T0)
+    started(w, "b2", 2, T0)
+    assert w.quiet_hexes(T0 + 8.0, 8.0) == []                                 # not more than 8 s yet
+    assert w.quiet_hexes(T0 + 8.5, 8.0) == ["a1", "b2"]
+    w.heard(fix("b2", T0 + 10.0))
+    assert w.quiet_hexes(T0 + 12.0, 8.0) == ["a1"] and w.hexes(T0 + 12.0) == ["a1", "b2"]
+    w.heard(replace(fix("a1", T0 + 11.0), origin=ORIGIN))                     # adsb.lol's position is not the receiver's
+    assert w.quiet_hexes(T0 + 12.0, 8.0) == ["a1"]
+    w.heard(fix("b2", T0 + 5.0))                                              # an older position moves nothing back
+    assert w.quiet_hexes(T0 + 18.0, 8.0) == ["a1"] and w.quiet_hexes(T0 + 18.5, 8.0) == ["a1", "b2"]
+
+
+def test_a_go_around_stays_quiet_or_heard_through_its_watch_and_a_stranger_is_never_kept():
+    w = WatchList(1200.0)
+    started(w, "a1", 1, T0)
+    w.heard(fix("a1", T0 + 50.0))
+    completed(w, "a1", 1, T0 + 60.0, "go_around")
+    assert w.quiet_hexes(T0 + 60.0, 8.0) == ["a1"]                            # 10 s since the receiver placed it
+    w.heard(fix("a1", T0 + 70.0))                                             # the climb-out, heard again
+    assert w.quiet_hexes(T0 + 75.0, 8.0) == []
+    w.heard(fix("c3", T0 + 70.0))                                             # never watched: not kept
+    started(w, "c3", 2, T0 + 100.0)
+    assert w.quiet_hexes(T0 + 108.5, 8.0) == ["a1", "c3"]                     # c3 heard at its start, not before
+    completed(w, "c3", 2, T0 + 110.0, "landed")
+    started(w, "c3", 3, T0 + 200.0)                                           # a new watch starts heard again
+    assert w.quiet_hexes(T0 + 205.0, 8.0) == ["a1"]
+
+
+def test_quiet_s_zero_asks_about_every_watched_aircraft():
+    w = WatchList(1200.0)
+    started(w, "a1", 1, T0)
+    w.heard(fix("a1", T0 + 1.0))
+    assert w.quiet_hexes(T0 + 1.0, 0.0) == ["a1"] == w.hexes(T0 + 1.0)
+
+
 # --- the poller ----------------------------------------------------------------------------------------------------
 
 class Clock:
@@ -399,8 +437,11 @@ class Rig:
 
 
 @pytest.fixture
-def rig(tmp_path):
+def rig(request, tmp_path):
+    """A poller on the example configuration. It asks about every watched aircraft (quiet_s = 0) unless a test sets
+    `quiet_s` with `@pytest.mark.parametrize("rig", [<quiet_s>], indirect=True)`."""
     cfg = load_config(ROOT / "config" / "adsb-approach.example.toml")
+    cfg.external.quiet_s = getattr(request, "param", 0.0)
     store = Store(tmp_path / "poller.sqlite")
     store.migrate()
     run = store.new_run("live", "test", external_merge=True)
@@ -417,6 +458,31 @@ def test_the_poller_watches_for_watch_max_min_after_a_go_around(rig):
 def test_nothing_is_polled_while_the_watch_list_is_empty(rig):
     assert rig.step() == IDLE_S == 1.0
     assert rig.fetch.calls == [] and rig.polls() == []
+
+
+@pytest.mark.parametrize("rig", [8.0], indirect=True)
+def test_only_the_aircraft_the_receiver_has_lost_are_asked_about(rig):
+    rig.watch("a1", "b2")                                                     # both started, so heard, at NOW
+    rig.clock.t = NOW + 9.0
+    rig.poller.watch.heard(fix("b2", NOW + 8.0))
+    rig.reply("a1", "b2")
+    assert rig.step() == 0.0
+    assert [url for url, _, _ in rig.fetch.calls] == ["https://re-api.adsb.lol/?find_hex=a1"]
+    assert [p.hex for p in rig.buffer] == ["a1"]                              # b2 was not asked about, so not kept
+    assert [row["asked"] for row in rig.polls()] == [1]
+
+
+@pytest.mark.parametrize("rig", [8.0], indirect=True)
+def test_no_request_goes_out_while_the_receiver_hears_every_watched_aircraft(rig):
+    rig.watch("a1")
+    for t in (NOW + 2.0, NOW + 6.0, NOW + 10.0):
+        rig.clock.t = t
+        rig.poller.watch.heard(fix("a1", t - 0.5))
+        assert rig.step() == IDLE_S
+    assert rig.fetch.calls == [] and rig.polls() == []
+    rig.clock.t = NOW + 18.6                                                  # 9.1 s after the receiver's last
+    rig.reply("a1")
+    assert rig.step() == 0.0 and len(rig.fetch.calls) == 1
 
 
 def test_a_poll_asks_for_the_watched_aircraft_and_buffers_and_stores_their_positions(rig, caplog):

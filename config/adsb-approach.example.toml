@@ -90,11 +90,12 @@ max_along_nm = 8.0
 enabled = false          # off unless chosen: polls send requests to adsb.lol
 url = "https://re-api.adsb.lol/"    # re-api; a poll adds ?find_hex= and the watched aircraft. Or the keyed v2 API:
                                   # "https://api.adsb.lol/v2/hex/", which takes them in the path
-poll_interval_s = 2      # at most one request this often, for every watched aircraft at once
+poll_interval_s = 2      # at most one request this often, for every aircraft due (quiet_s) at once
 timeout_s = 10           # one request's limit; a timeout skips that poll only
 backoff_min = 15         # pause after a 401, 403, 429 or 5xx that sends no Retry-After; a restart keeps it
 clock_offset_s = 0.10    # taken off adsb.lol's times to sit on this receiver's clock
 watch_max_min = 20       # minutes after a go-around or touch-and-go to keep asking and to record its climb-out
+quiet_s = 8              # ask about a watched aircraft only once the receiver has not placed it this long; 0: always
 api_key_file = ""        # a file holding an adsb.lol key (www.adsb.lol/mmb), sent as x-api-key; empty sends none
 globe_url = "https://globe.adsb.lol/"    # the drawer's second link, alongside tar1090's; independent of enabled above
 

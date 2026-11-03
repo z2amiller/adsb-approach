@@ -108,11 +108,24 @@ uv run adsb-approach run --config config/adsb-approach.toml
     - Anything else is watched until its attempt closes: lost, abandoned or a runway change.
     - A restart begins with an empty list: the next start closes the approaches the stop cut short as `lost` with
       `INTERRUPTED`, so none is left to watch.
-  - **What it asks:** one request every `poll_interval_s` (2 s) for every watched aircraft at once, to `[external]
-    url` (`https://re-api.adsb.lol/`) as `?find_hex=<hex>,<hex>,...`. A request that runs long delays the next, so
-    requests never overlap. That is an estimated 31,000 to 35,000 requests a day for a busy receiver near major
-    airports.
-    - re-api is readsb's API port, and adsb.lol serves it only to an address that feeds adsb.lol.
+  - **What it asks:** at most one request every `poll_interval_s` (2 s), to `[external] url`
+    (`https://re-api.adsb.lol/`) as `?find_hex=<hex>,<hex>,...`. A request that runs long delays the next, so
+    requests never overlap.
+    - **Only the aircraft the receiver has lost:** a request asks about the watched aircraft the receiver has given no
+      position of for more than `quiet_s` (8 s), all at once, and none goes out while the receiver places every
+      watched aircraft. adsb.lol adds to a track only where the receiver has lost it, and a key's quota is counted in
+      requests. `quiet_s = 0` asks about every watched aircraft. The collector tells the watch list of each position
+      it processes, and a start counts as heard, since it comes from a receiver position.
+    - **What that saves:** on three busy days of a receiver near four airports (2026-10-25 to 10-27), polling every
+      watched aircraft at 8 s made about 7,200 requests a day. Asking only about aircraft quiet for 8 s would have
+      made 13% fewer, and kept 95% of the airborne adsb.lol positions those approaches used. The saving is small
+      because by day some watched aircraft is nearly always in its tail, below the receiver's coverage, which is
+      exactly when adsb.lol is asked.
+    - **Fitting a key's quota:** a free receiver key allowed 18,000 requests a week and 72,000 a month in November
+      2026, about 2,400 a day. With `quiet_s = 8`, that receiver's traffic fits `poll_interval_s = 22`, about 2,300
+      a day. At 12 s it would have needed some 4,200.
+    - re-api is readsb's API port. adsb.lol serves it only to an address that feeds adsb.lol, and since 2026-10-28
+      only with a key: keyless requests from the feeding address now answer 401 `api key required`.
     - **The v2 API instead:** a `url` ending in `/v2/hex/` (`https://api.adsb.lol/v2/hex/`) asks adsb.lol's keyed
       API, with the hexes comma-separated in the path. That API hands them to re-api's `find_hex` and answers in its
       v2 shape (`ac`, `now` in milliseconds), which the poller reads as re-api's. Tested 2026-10-24: the anonymous key
@@ -162,8 +175,8 @@ uv run adsb-approach run --config config/adsb-approach.toml
     alone, so approaches end as they would without the merge.
     - **Pauses:** a 401, 403, 429 or 5xx pauses polling, logged with the status. The pause lasts as long as the
       answer's `Retry-After` asks (seconds or a date, capped at an hour), and `backoff_min` (15 min) when it sends none.
-      Keyless re-api answered 429 after about 60 requests at a 2 s interval and about 130 at 5 s (2026-10-24), so
-      `poll_interval_s = 10` is the safer setting without a key that has a higher limit. A 401 says the key was
+      Keyless re-api answered 429 after about 60 requests at a 2 s interval and about 130 at 5 s (2026-10-24), before
+      adsb.lol began requiring a key. With a key, set `poll_interval_s` from its quota, as above. A 401 says the key was
       refused. A key file that can't be read, or is empty, pauses the same way without sending a request,
       and its error names the file. The pause is read back from the database, so it survives a restart.
     - **Skips:** a timeout, a network error, any other status (a redirect included, which is never followed, so the
