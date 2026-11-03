@@ -115,8 +115,9 @@ uv run adsb-approach run --config config/adsb-approach.toml
       position of for more than `quiet_s` (8 s), all at once, and none goes out while the receiver places every
       watched aircraft. adsb.lol adds to a track only where the receiver has lost it, and a key's quota is counted in
       requests. `quiet_s = 0` asks about every watched aircraft. The collector tells the watch list of each position
-      it processes, and a start on a receiver position counts as heard; one on adsb.lol's does not. The test compares
-      readsb's position times with this host's clock, so a readsb on another host needs both clocks in step (NTP).
+      it processes, and a start on a receiver position counts as heard; one on adsb.lol's does not, and nor does a
+      TIS-B position, which the matcher drops as too coarse to use. The test compares readsb's position times with
+      this host's clock, so a readsb on another host needs both clocks in step (NTP).
     - **What that saves:** on three busy days of a receiver near four airports (2026-10-25 to 10-27), polling every
       watched aircraft at 8 s made about 7,200 requests a day. Asking only about aircraft quiet for 8 s would have
       made 13% fewer, and kept 95% of the airborne adsb.lol positions those approaches used. The saving is small

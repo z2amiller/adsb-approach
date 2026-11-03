@@ -373,6 +373,16 @@ def test_a_go_around_stays_quiet_or_heard_through_its_watch_and_a_stranger_is_ne
     assert w.quiet_hexes(T0 + 205.0, 8.0) == ["a1"]
 
 
+@pytest.mark.parametrize("source", ["tisb_icao", "tisb_other", "tisb_trackfile"])
+def test_a_tis_b_position_the_matcher_cannot_use_is_not_the_receiver_hearing_it(source):
+    """The matcher drops radar-derived TIS-B positions as too coarse, so an aircraft the receiver now only has as TIS-B
+    has been lost to it, and must still be asked about."""
+    w = WatchList(1200.0)
+    started(w, "a1", 1, T0)
+    w.heard(replace(fix("a1", T0 + 10.0), source=source))
+    assert w.quiet_hexes(T0 + 12.0, 8.0) == ["a1"]
+
+
 def test_a_start_on_an_adsb_lol_position_is_not_the_receiver_hearing_it():
     """A go-around's next attempt can establish on adsb.lol's positions below the receiver's coverage: the aircraft
     stays quiet, so it is still asked about."""

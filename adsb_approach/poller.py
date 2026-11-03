@@ -23,6 +23,7 @@ from pathlib import Path
 
 from . import __version__
 from .config import Config
+from .matcher import coarse
 from .model import Outcome, Position
 from .sources.base import position_from_readsb
 from .store.db import Store, current_poll_pause
@@ -231,8 +232,9 @@ class WatchList:
 
     def heard(self, pos: Position) -> None:
         """The receiver placed `pos.hex` at `pos.t`: kept for a watched aircraft (an older position moves nothing back),
-        ignored for any other and for adsb.lol's own positions."""
-        if pos.origin == ORIGIN or (pos.hex not in self._open and pos.hex not in self._until):
+        ignored for any other, for adsb.lol's own positions, and for a position the matcher drops as too coarse to use
+        (TIS-B), since an aircraft the receiver has only as that is lost to the approach all the same."""
+        if pos.origin == ORIGIN or coarse(pos) or (pos.hex not in self._open and pos.hex not in self._until):
             return
         self._heard[pos.hex] = max(self._heard.get(pos.hex, pos.t), pos.t)
 
